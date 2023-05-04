@@ -1,16 +1,27 @@
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.security.AnyTypePermission;
+import com.thoughtworks.xstream.security.NoTypePermission;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Habitat extends JPanel {
     final public static int WIDTH = 800;
@@ -128,6 +139,9 @@ public class Habitat extends JPanel {
 
     public void saveToSerializable() {
         XStream xstream = new XStream();
+        xstream.alias("JLabel", JLabel.class);
+        xstream.registerConverter(new JLabelConverter());
+        xstream.registerConverter(new ImageConverter());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("serializableFile.xml"))) {
             xstream.toXML(listImage, writer);
             xstream.toXML(listText, writer);
@@ -138,13 +152,96 @@ public class Habitat extends JPanel {
 
     public void loadFromSerializable() {
         XStream xstream = new XStream();
+        xstream.alias("JLabel", JLabel.class);
+        xstream.registerConverter(new JLabelConverter());
+        xstream.registerConverter(new ImageConverter());
+        xstream.addPermission(AnyTypePermission.ANY);
+        xstream.addPermission(NoTypePermission.NONE);
+        xstream.allowTypes(new Class[]{Habitat.class, LeftClick.class, RightClick.class, java.util.List.class,
+                java.awt.image.BufferedImage.class});
         try (BufferedReader reader = new BufferedReader(new FileReader("serializableFile.xml"))) {
-            listImage = (ArrayList<RightClick>) xstream.fromXML(reader);
-            listText = (ArrayList<LeftClick>) xstream.fromXML(reader);
+            //listImage = (ArrayList<RightClick>) xstream.fromXML(reader);
+            //listText = (ArrayList<LeftClick>) xstream.fromXML(reader);
+            String xml = reader.lines().collect(Collectors.joining()); // прочитать весь xml как одну строку
+            int index = xml.indexOf("<LeftClick>"); // найти первое вхождение тега <LeftClick>
+            while (index != -1) { // если тег найден
+                String leftClickXml = xml.substring(index, xml.indexOf("</LeftClick>", index) + 12); // выделить xml для тега
+                listText.add((LeftClick) xstream.fromXML(leftClickXml)); // десериализовать список объектов
+                // LeftClick из выделенного xml
+                index = xml.indexOf("<LeftClick>", index + 1); // искать следующий тег
+            }
+            index = xml.indexOf("<RightClick>"); // найти первое вхождение тега <RightClick>
+            while (index != -1) { // если тег найден
+                String rightClickXml = xml.substring(index, xml.indexOf("</RightClick>", index) + 13); // выделить xml для тега
+                int indexToReplace = rightClickXml.indexOf("=\"");
+                String strToReplace = rightClickXml.substring(indexToReplace + 2, rightClickXml.indexOf("\">"));
+                rightClickXml = rightClickXml.replace(strToReplace, "java.awt.image.BufferedImage");
+                listImage.add((RightClick) xstream.fromXML(rightClickXml)); // десериализовать список объектов RightClick
+                // из выделенного xml
+                index = xml.indexOf("<RightClick>", index + 1); // искать следующий тег
+            }
+
             updateUI();
         } catch (IOException ex) {
             System.err.println(ex);
         }
+    }
+
+    private static class JLabelConverter implements Converter {
+        public void marshal(Object obj, HierarchicalStreamWriter writer, MarshallingContext context) {
+            JLabel label = (JLabel) obj;
+            writer.setValue(label.getText());
+        }
+
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            JLabel label = new JLabel(reader.getValue());
+            return label;
+        }
+
+        public boolean canConvert(Class clazz) {
+            return clazz.equals(JLabel.class);
+        }
+    }
+
+    private static class ImageConverter implements Converter {
+        @Override
+        public boolean canConvert(Class clazz) {
+            return Image.class.isAssignableFrom(clazz);
+        }
+
+        @Override
+        public void marshal(Object object, HierarchicalStreamWriter writer, MarshallingContext context) {
+            Image image = (Image) object;
+            try {
+                // Создаем буферизованное изображение из объекта Image
+                BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null),
+                        BufferedImage.TYPE_INT_ARGB);
+                bufferedImage.getGraphics().drawImage(image, 0, 0, null);
+                // Преобразуем его в массив байтов в формате PNG
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "png", byteArrayOutputStream);
+                byte[] bytes = byteArrayOutputStream.toByteArray();
+                // Записываем массив байтов в XML как текстовый узел
+                writer.setValue(Base64.getEncoder().encodeToString(bytes));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            try {
+                // Считываем текстовый узел из XML как массив байтов
+                byte[] bytes = Base64.getDecoder().decode(reader.getValue());
+                // Преобразуем массив байтов в буферизованное изображение
+                BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(bytes));
+                // Создаем объект Image из буферизованного изображения
+                return bufferedImage;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     public void saveToText() {
@@ -221,12 +318,16 @@ public class Habitat extends JPanel {
     public void paint(Graphics g) {
         super.paint(g);
 
-        for (int i = 0; i < listText.size(); i++) {
-            listText.get(i).paint(g);
+        if (!listText.isEmpty()) {
+            for (int i = 0; i < listText.size(); i++) {
+                listText.get(i).paint(g);
+            }
         }
 
-        for (int i = 0; i < listImage.size(); i++) {
-            listImage.get(i).paint(g);
+        if (!listImage.isEmpty()) {
+            for (int i = 0; i < listImage.size(); i++) {
+                listImage.get(i).paint(g);
+            }
         }
     }
 

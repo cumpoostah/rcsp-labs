@@ -3,6 +3,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.*;
+import java.util.stream.Collectors;
 
 public class Main extends JFrame {
     JMenu menu = new JMenu("File");
@@ -84,7 +85,7 @@ public class Main extends JFrame {
         });
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -94,6 +95,14 @@ public class Main extends JFrame {
 
         Main mw = new Main();
 
+        /*BufferedReader reader = new BufferedReader(new FileReader("serializableFile.xml"));
+        String xml = reader.lines().collect(Collectors.joining());
+        System.out.println(xml);
+        int index = xml.indexOf("=\"");
+        String asd = xml.substring(index + 2, xml.indexOf("\">"));
+        System.out.println(asd);
+        xml = xml.replace(asd, "java.awt.image.BufferedImage");
+        System.out.println(xml);*/
     }
 
 }
