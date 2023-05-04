@@ -176,6 +176,7 @@ public class Habitat extends JPanel {
                 int indexToReplace = rightClickXml.indexOf("=\"");
                 String strToReplace = rightClickXml.substring(indexToReplace + 2, rightClickXml.indexOf("\">"));
                 rightClickXml = rightClickXml.replace(strToReplace, "java.awt.image.BufferedImage");
+                if (rightClickXml.contains("reference"))
                 listImage.add((RightClick) xstream.fromXML(rightClickXml)); // десериализовать список объектов RightClick
                 // из выделенного xml
                 index = xml.indexOf("<RightClick>", index + 1); // искать следующий тег

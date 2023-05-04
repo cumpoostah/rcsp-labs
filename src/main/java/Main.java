@@ -85,24 +85,22 @@ public class Main extends JFrame {
         });
     }
 
-    public static void main(String[] args) {
-
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Main mw = new Main();
-
-        /*BufferedReader reader = new BufferedReader(new FileReader("serializableFile.xml"));
+    public static void main(String[] args) throws FileNotFoundException {
+        BufferedReader reader = new BufferedReader(new FileReader("serializableFile.xml"));
         String xml = reader.lines().collect(Collectors.joining());
-        System.out.println(xml);
-        int index = xml.indexOf("=\"");
-        String asd = xml.substring(index + 2, xml.indexOf("\">"));
-        System.out.println(asd);
-        xml = xml.replace(asd, "java.awt.image.BufferedImage");
-        System.out.println(xml);*/
+        int index = xml.indexOf("<RightClick>");
+        String rightClickXml = xml.substring(index, xml.indexOf("</RightClick>", index) + 13); // выделить xml для тега
+        int indexToReplace = rightClickXml.indexOf("=\"");
+        String strToReplace;
+        if (indexToReplace != -1) {
+            strToReplace = rightClickXml.substring(indexToReplace + 2, rightClickXml.indexOf("\">"));
+        } else {
+            if (rightClickXml.contains("reference")) {
+
+            }
+        }
+        rightClickXml = rightClickXml.replace(strToReplace, "java.awt.image.BufferedImage");
+        System.out.println(rightClickXml);
     }
 
 }
