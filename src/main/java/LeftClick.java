@@ -33,12 +33,21 @@ public class LeftClick extends ObjectClick {
         g.drawString(jl.getText(), (int)getX(), (int)(getY()+getHeight()));
     }
 
-    public void moveXLeft(double t){
-        setX(getX()+getdXY()* t / 100)
-        ;}
-    public void moveXRigth(double t){setX(getX()-getdXY()* t / 100);}
-    public void moveYUp(double t){setY(getY()-getdXY()* t / 100);}
-    public void moveYDown(double t){setY(getY()+getdXY()* t / 100);}
+    public void moveXLeft(double t) {
+        setX(getX()+getdXY()* t / 100);
+    }
+
+    public void moveXRigth(double t) {
+        setX(getX()-getdXY()* t / 100);
+    }
+
+    public void moveYUp(double t) {
+        setY(getY()-getdXY()* t / 100);
+    }
+
+    public void moveYDown(double t) {
+        setY(getY()+getdXY()* t / 100);
+    }
 
 
     private int getdXY() {
@@ -48,28 +57,21 @@ public class LeftClick extends ObjectClick {
 
     @Override
     public void move(double t) {
-        if(getX()+getWidth()< Habitat.WIDTH && getX() > 0) {
+        if (getX()+getWidth()< Habitat.WIDTH && getX() > 0) {
             moveX(t);
-        }else {
-
-            if(getX()+getWidth()>= Habitat.WIDTH)
-                setX(Habitat.WIDTH -1 - getWidth());
-            if(getX() <= 0)
-                setX(0 +1);
+        } else {
+            if (getX()+getWidth() >= Habitat.WIDTH) setX(Habitat.WIDTH -1 - getWidth());
+            if (getX() <= 0) setX(0 + 1);
 
             setdX(getdX()*-1);
-
         }
+
         if(getY()+getHeight()< Habitat.HEIGHT & getY() > 0) {
             moveY(t);
 
-        }else{
-
-
-            if(getY()+getHeight()>= Habitat.HEIGHT)
-                setY(Habitat.HEIGHT -1 - getHeight());
-            if(getY() <= 0)
-                setY(0 +1);
+        } else {
+            if(getY()+getHeight()>= Habitat.HEIGHT) setY(Habitat.HEIGHT -1 - getHeight());
+            if(getY() <= 0) setY(0 + 1);
             setdY(getdY()*-1);
         }
     }

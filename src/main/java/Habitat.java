@@ -1,3 +1,5 @@
+import com.thoughtworks.xstream.XStream;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -8,7 +10,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-
+import java.util.Scanner;
 
 public class Habitat extends JPanel {
     final public static int WIDTH = 800;
@@ -52,7 +54,7 @@ public class Habitat extends JPanel {
         threadText.start();
     }
 
-    public void saveToTXT () {
+    /*public void saveToTXT () {
         try (OutputStream f = new FileOutputStream("File.txt", false)) {
             try (OutputStreamWriter writer = new OutputStreamWriter(f)) {
                 for (Object o : listImage)
@@ -70,12 +72,13 @@ public class Habitat extends JPanel {
     public void loadTXT () {
         try {
             Files.readAllLines(Paths.get("File.txt")).forEach(line -> {
-                        String[] s = line.split("");
+                        line = line.replaceAll(",", ".");
+                        String[] s = line.split(" ");
                         double x = Double.parseDouble(s[1]);
                         double y = Double.parseDouble(s[2]);
-                        if(s[0] == "RightClick")
+                        if (s[0].equals("RightClick"))
                             listImage.add(new RightClick((int) x, (int) y, "src/main/resources/assets/RightClick.png"));
-                        if(s[1] == "LeftClick")
+                        if (s[0].equals("LeftClick"))
                             listText.add(new LeftClick((int) x, (int) y));
                     }
             );
@@ -86,10 +89,107 @@ public class Habitat extends JPanel {
             System.err.println(ex);
         }
 
+    }*/
+
+    public void saveToBinary() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("binaryFile.bin"))) {
+            oos.writeInt(listImage.size());
+            for (Object o : listImage)
+                oos.writeObject(o);
+
+            oos.writeInt(listText.size());
+            for (Object o : listText)
+                oos.writeObject(o);
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
     }
 
-    public void saveBIN (){
-//        byte[] bytes =
+    public void loadFromBinary() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("binaryFile.bin"))) {
+            int size = ois.readInt();
+            for (int i = 0; i < size; i++) {
+                Object o = ois.readObject();
+                if (o instanceof RightClick)
+                    listImage.add((RightClick) o);
+            }
+
+            size = ois.readInt();
+            for (int i = 0; i < size; i++) {
+                Object o = ois.readObject();
+                if (o instanceof LeftClick)
+                    listText.add((LeftClick) o);
+            }
+            updateUI();
+        } catch (ClassNotFoundException | IOException ex) {
+            System.err.println(ex);
+        }
+    }
+
+    public void saveToSerializable() {
+        XStream xstream = new XStream();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("serializableFile.xml"))) {
+            xstream.toXML(listImage, writer);
+            xstream.toXML(listText, writer);
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
+    }
+
+    public void loadFromSerializable() {
+        XStream xstream = new XStream();
+        try (BufferedReader reader = new BufferedReader(new FileReader("serializableFile.xml"))) {
+            listImage = (ArrayList<RightClick>) xstream.fromXML(reader);
+            listText = (ArrayList<LeftClick>) xstream.fromXML(reader);
+            updateUI();
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
+    }
+
+    public void saveToText() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter("textFile.txt"))) {
+            pw.println(listImage.size());
+            for (Object o : listImage)
+                pw.println(o.toString());
+
+            pw.println(listText.size());
+            for (Object o : listText)
+                pw.println(o.toString());
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
+    }
+
+    public void loadFromText() {
+        try (Scanner scanner = new Scanner(new FileReader("textFile.txt"))) {
+            int size = scanner.nextInt();
+            scanner.nextLine();
+            for (int i = 0; i < size; i++) {
+                String line = scanner.nextLine();
+                line = line.replaceAll(",", ".");
+                String[] s = line.split(" ");
+                double x = Double.parseDouble(s[1]);
+                double y = Double.parseDouble(s[2]);
+                if (s[0].equals("RightClick"))
+                    listImage.add(new RightClick((int) x, (int) y, "src/main/resources/assets/RightClick.png"));
+            }
+
+            size = scanner.nextInt();
+            scanner.nextLine();
+            for (int i = 0; i < size; i++) {
+                String line = scanner.nextLine();
+                line = line.replaceAll(",", ".");
+                String[] s = line.split(" ");
+                double x = Double.parseDouble(s[1]);
+                double y = Double.parseDouble(s[2]);
+                if (s[0].equals("LeftClick"))
+                    listText.add(new LeftClick((int) x, (int) y));
+            }
+            updateUI();
+        } catch (IOException ex) {
+            System.err.println(ex);
+        }
     }
 
     public void addImage(int x, int y) {

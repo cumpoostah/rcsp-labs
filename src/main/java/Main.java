@@ -7,15 +7,17 @@ import java.io.*;
 public class Main extends JFrame {
     JMenu menu = new JMenu("File");
     JMenu menuSerialization = new JMenu("Serialization");
-    JMenu moveQ = new JMenu("Движение картинки по кнопке - Q");
+    JMenu moveQ = new JMenu("Движение/остановка картинки по кнопке - Q");
     JMenu moveW = new JMenu("Движение текста по кнопке - W");
     JMenu moveE = new JMenu("Движение объектов по кнопке - E");
     JMenuBar menuBar = new JMenuBar();
-    JMenuItem menuItem = new JMenuItem("How to do?");
+    JMenuItem menuItem = new JMenuItem("Manual");
     JMenuItem menuSaveTXT = new JMenuItem("Save to TXT");
-    JMenuItem menuLoadTXT = new JMenuItem("Load to TXT");
+    JMenuItem menuLoadTXT = new JMenuItem("Load from TXT");
     JMenuItem menuSaveBIN = new JMenuItem("Save to BIN");
-    JMenuItem menuLoadBIN = new JMenuItem("Load to BIN");
+    JMenuItem menuLoadBIN = new JMenuItem("Load from BIN");
+    JMenuItem menuSaveXML = new JMenuItem("Save to XML");
+    JMenuItem menuLoadXML = new JMenuItem("Load from XML");
 
     public Main(){
         setTitle("Лабораторная работа №1");
@@ -44,6 +46,9 @@ public class Main extends JFrame {
         menuSerialization.addSeparator();
         menuSerialization.add(menuSaveBIN);
         menuSerialization.add(menuLoadBIN);
+        menuSerialization.addSeparator();
+        menuSerialization.add(menuSaveXML);
+        menuSerialization.add(menuLoadXML);
         setJMenuBar(menuBar);
 
         menuItem.addActionListener(e -> {
@@ -55,19 +60,27 @@ public class Main extends JFrame {
         });
 
         menuSaveTXT.addActionListener(e->{
-            habitatPanel.saveToTXT();
+            habitatPanel.saveToText();
         });
 
         menuLoadTXT.addActionListener(e-> {
-            habitatPanel.loadTXT();
+            habitatPanel.loadFromText();
         });
 
         menuSaveBIN.addActionListener(e->{
-            System.out.println(3);
+            habitatPanel.saveToBinary();
         });
 
         menuLoadBIN.addActionListener(e->{
-            System.out.println(4);
+            habitatPanel.loadFromBinary();
+        });
+
+        menuSaveXML.addActionListener(e->{
+            habitatPanel.saveToSerializable();
+        });
+
+        menuLoadXML.addActionListener(e->{
+            habitatPanel.loadFromSerializable();
         });
     }
 
@@ -79,8 +92,8 @@ public class Main extends JFrame {
             e.printStackTrace();
         }
 
-
         Main mw = new Main();
+
     }
 
 }
