@@ -171,14 +171,21 @@ public class Habitat extends JPanel {
                 index = xml.indexOf("<LeftClick>", index + 1); // искать следующий тег
             }
             index = xml.indexOf("<RightClick>"); // найти первое вхождение тега <RightClick>
+            String id = new String();
             while (index != -1) { // если тег найден
                 String rightClickXml = xml.substring(index, xml.indexOf("</RightClick>", index) + 13); // выделить xml для тега
-                int indexToReplace = rightClickXml.indexOf("=\"");
-                String strToReplace = rightClickXml.substring(indexToReplace + 2, rightClickXml.indexOf("\">"));
-                rightClickXml = rightClickXml.replace(strToReplace, "java.awt.image.BufferedImage");
-                if (rightClickXml.contains("reference"))
-                listImage.add((RightClick) xstream.fromXML(rightClickXml)); // десериализовать список объектов RightClick
-                // из выделенного xml
+                if (!rightClickXml.contains("reference")) {
+                    int indexToReplace = rightClickXml.indexOf("=\"");
+                    String strToReplace = rightClickXml.substring(indexToReplace + 2, rightClickXml.indexOf("\">"));
+                    rightClickXml = rightClickXml.replace(strToReplace, "java.awt.image.BufferedImage");
+                    id = rightClickXml.substring(rightClickXml.indexOf("<i"), rightClickXml.indexOf("</i>") + 4);
+                    listImage.add((RightClick) xstream.fromXML(rightClickXml)); // десериализовать список объектов RightClick
+                    // из выделенного xml
+                } else {
+                    String strToReplace = rightClickXml.substring(rightClickXml.indexOf("<i"), rightClickXml.indexOf("/>") + 2);
+                    rightClickXml = rightClickXml.replace(strToReplace, id);
+                    listImage.add((RightClick) xstream.fromXML(rightClickXml));
+                }
                 index = xml.indexOf("<RightClick>", index + 1); // искать следующий тег
             }
 
