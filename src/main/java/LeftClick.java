@@ -1,11 +1,31 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serializable;
 import java.util.Random;
 
-public class LeftClick extends ObjectClick {
+public class LeftClick extends ObjectClick implements Serializable {
     String l;
     JLabel jl = new JLabel();
     private int dXY;
+
+    LeftClick() {
+        super(new Random().nextInt(), new Random().nextInt(), new Random().nextInt(), new Random().nextInt());
+        jl.setText("Строка текста");
+
+        setHeight((int)jl.getPreferredSize().getHeight());
+        setWidth((int)jl.getPreferredSize().getWidth());
+
+        setX(getX()-getWidth()/2);
+        setY(getY()-getHeight()/2);
+
+        System.out.println("Добавление строки текста по координатам:");
+        System.out.println("Ширина: " + getX());
+        System.out.println("Высота: " + getY());
+        System.out.println("Строка текста добавлена!" + "\n");
+
+        top = new Random().nextInt(25);
+        left = new Random().nextInt(25);
+    }
 
     LeftClick(int x, int y){
         super(x,y,0, 0);

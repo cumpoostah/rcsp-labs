@@ -14,6 +14,17 @@ abstract public class ObjectClick implements Drawable, Moveable {
 
     private Color c;
 
+    ObjectClick() {
+        this.x = new Random().nextInt(200);
+        this.y = new Random().nextInt(200);
+
+        velocityX = -100+new Random().nextInt(200);
+        velocityY = -100+new Random().nextInt(200);
+
+        this.height = new Random().nextInt(200);
+        this.width = new Random().nextInt(200);
+    }
+
     ObjectClick(int x, int y, int height, int width){
         this.x = x;
         this.y = y;

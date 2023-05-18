@@ -102,40 +102,27 @@ public class Habitat extends JPanel {
 
     }*/
 
+    // сохранение объектов в двоичный файл
     public void saveToBinary() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("binaryFile.bin"))) {
-            oos.writeInt(listImage.size());
-            for (Object o : listImage)
-                oos.writeObject(o);
-
-            oos.writeInt(listText.size());
-            for (Object o : listText)
-                oos.writeObject(o);
+            oos.writeObject(listImage);
+            oos.writeObject(listText);
         } catch (IOException ex) {
             System.err.println(ex);
         }
     }
 
+    // загрузка объектов из двоичного файла
     public void loadFromBinary() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("binaryFile.bin"))) {
-            int size = ois.readInt();
-            for (int i = 0; i < size; i++) {
-                Object o = ois.readObject();
-                if (o instanceof RightClick)
-                    listImage.add((RightClick) o);
-            }
-
-            size = ois.readInt();
-            for (int i = 0; i < size; i++) {
-                Object o = ois.readObject();
-                if (o instanceof LeftClick)
-                    listText.add((LeftClick) o);
-            }
+            listImage = (ArrayList<RightClick>) ois.readObject();
+            listText = (ArrayList<LeftClick>) ois.readObject();
             updateUI();
-        } catch (ClassNotFoundException | IOException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             System.err.println(ex);
         }
     }
+
 
     public void saveToSerializable() {
         XStream xstream = new XStream();

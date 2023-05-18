@@ -1,13 +1,26 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serializable;
+import java.util.Random;
 
-public class RightClick extends ObjectClick {
-    Image i;
+public class RightClick extends ObjectClick implements Serializable {
+    transient Image i;
 
-    RightClick(int x, int y, int height, int width){
-        super(x, y, height, width);
+    RightClick() {
+        super(new Random().nextInt(), new Random().nextInt(), new Random().nextInt(), new Random().nextInt());
+
+        i = new ImageIcon("src/main/resources/RightClick.png").getImage();
+
         setHeight(i.getHeight(null));
         setWidth(i.getWidth(null));
+
+        setX(getX()-getWidth()/2);
+        setY(getY()-getHeight()/2);
+    }
+
+    RightClick(int x, int y, int height, int width){
+        super(new Random().nextInt(), new Random().nextInt(), new Random().nextInt(), new Random().nextInt());
+        this.setMoving(true);
     }
 
     RightClick(int x, int y, String filename) {
